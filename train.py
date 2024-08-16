@@ -53,10 +53,7 @@ import numpy as np
 
 import models
 
-import lpips
-
 device = torch.device("cuda")
-lpips_function = lpips.LPIPS(net='vgg').to(device)
 
 
 LOGS_PATH = os.path.join(args.output_dir, "logs")
@@ -195,27 +192,6 @@ def regression_loss(predict):
 	loss = (1 - predict)
 	
 	return torch.sum(loss) / len(loss)
-
-def image_loss(imgs, imgs_ori, loss_type='mse'):
-	"""
-	Compute the image loss
-	Args:
-		imgs (BxCxHxW): the reconstructed images
-		imgs_ori (BxCxHxW): the original images
-		loss_type: the type of loss
-	"""
-	
-	if loss_type == 'mse':
-		return F.mse_loss(imgs, imgs_ori, reduction='mean')
-	if loss_type == 'l1':
-		return F.l1_loss(imgs, imgs_ori, reduction='mean')
-	if loss_type == 'lpips':
-		loss = lpips_function(imgs, imgs_ori)
-		loss = loss - args.budget
-		loss = torch.clamp(loss, min=0)
-		return torch.sum(loss)/len(loss)
-	else:
-		raise ValueError('Unknown loss type')
 
 def main():
 	load_data()
